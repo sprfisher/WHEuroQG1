@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Split-Screen Quiz Game</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .team {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .team.left {
+      background-color: lightblue;
+    }
+    .team.right {
+      background-color: lightgreen;
+    }
+    .question {
+      text-align: center;
+      padding: 20px;
+      background-color: #f8f9fa;
+      position: absolute;
+      width: 100%;
+      top: 10%;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .scoreboard {
+      position: absolute;
+      top: 2%;
+      width: 100%;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .choices button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+    }
+    .choices button:hover {
+      background-color: #ddd;
+    }
+    .choices button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="scoreboard">Team 1: 0 | Team 2: 0</div>
+  <div class="question">What happens to the equilibrium price if demand increases?</div>
+  <div class="container">
+    <div class="team left">
+      <h2>Team 1</h2>
+      <div class="choices" id="team1-choices">
+        <button onclick="checkAnswer('team1', 'A')">A. Decreases</button>
+        <button onclick="checkAnswer('team1', 'B')">B. Increases</button>
+        <button onclick="checkAnswer('team1', 'C')">C. Stays the same</button>
+        <button onclick="checkAnswer('team1', 'D')">D. None</button>
+      </div>
+    </div>
+    <div class="team right">
+      <h2>Team 2</h2>
+      <div class="choices" id="team2-choices">
+        <button onclick="checkAnswer('team2', '1')">1. Decreases</button>
+        <button onclick="checkAnswer('team2', '2')">2. Increases</button>
+        <button onclick="checkAnswer('team2', '3')">3. Stays the same</button>
+        <button onclick="checkAnswer('team2', '4')">4. None</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+const questions = [
+  {
+    question: "What was the Renaissance?",
+    choicesTeam1: [
+      "A. A rebirth of art and learning",
+      "B. The fall of the Roman Empire",
+      "C. The start of the Industrial Revolution",
+      "D. The spread of feudalism"
+    ],
+    choicesTeam2: [
+      "1. A rebirth of art and learning",
+      "2. The fall of the Roman Empire",
+      "3. The start of the Industrial Revolution",
+      "4. The spread of feudalism"
+    ],
+    correctTeam1: "A",
+    correctTeam2: "1",
+    explanation: "The Renaissance was a cultural movement marked by renewed interest in classical art, learning, and humanism."
+  },
+  {
+    question: "Where did the Renaissance begin?",
+    choicesTeam1: [
+      "A. England",
+      "B. Italy",
+      "C. Germany",
+      "D. France"
+    ],
+    choicesTeam2: [
+      "1. England",
+      "2. Italy",
+      "3. Germany",
+      "4. France"
+    ],
+    correctTeam1: "B",
+    correctTeam2: "2",
+    explanation: "The Renaissance began in Italy, particularly in cities like Florence and Venice."
+  },
+  {
+    question: "Who painted the Mona Lisa?",
+    choicesTeam1: [
+      "A. Michelangelo",
+      "B. Raphael",
+      "C. Leonardo da Vinci",
+      "D. Donatello"
+    ],
+    choicesTeam2: [
+      "1. Michelangelo",
+      "2. Raphael",
+      "3. Leonardo da Vinci",
+      "4. Donatello"
+    ],
+    correctTeam1: "C",
+    correctTeam2: "3",
+    explanation: "Leonardo da Vinci painted the Mona Lisa, one of the most famous artworks in history."
+  },
+  {
+    question: "Which invention greatly helped the spread of Renaissance ideas?",
+    choicesTeam1: [
+      "A. The compass",
+      "B. The printing press",
+      "C. The steam engine",
+      "D. The telescope"
+    ],
+    choicesTeam2: [
+      "1. The compass",
+      "2. The printing press",
+      "3. The steam engine",
+      "4. The telescope"
+    ],
+    correctTeam1: "B",
+    correctTeam2: "2",
+    explanation: "The printing press, invented by Johannes Gutenberg, revolutionized the spread of knowledge during the Renaissance."
+  },
+  {
+    question: "What does 'Renaissance' mean?",
+    choicesTeam1: [
+      "A. Enlightenment",
+      "B. Revival",
+      "C. Rebirth",
+      "D. Revolution"
+    ],
+    choicesTeam2: [
+      "1. Enlightenment",
+      "2. Revival",
+      "3. Rebirth",
+      "4. Revolution"
+    ],
+    correctTeam1: "C",
+    correctTeam2: "3",
+    explanation: "The term 'Renaissance' comes from the French word for 'rebirth,' reflecting the renewal of classical ideas and culture."
+  },
+  {
+    question: "Who sculpted David?",
+    choicesTeam1: [
+      "A. Donatello",
+      "B. Raphael",
+      "C. Michelangelo",
+      "D. Leonardo da Vinci"
+    ],
+    choicesTeam2: [
+      "1. Donatello",
+      "2. Raphael",
+      "3. Michelangelo",
+      "4. Leonardo da Vinci"
+    ],
+    correctTeam1: "C",
+    correctTeam2: "3",
+    explanation: "Michelangelo sculpted David, a masterpiece of Renaissance art."
+  },
+  {
+    question: "What was humanism?",
+    choicesTeam1: [
+      "A. A religious movement",
+      "B. A focus on human potential and achievements",
+      "C. The study of ancient weapons",
+      "D. A political philosophy"
+    ],
+    choicesTeam2: [
+      "1. A religious movement",
+      "2. A focus on human potential and achievements",
+      "3. The study of ancient weapons",
+      "4. A political philosophy"
+    ],
+    correctTeam1: "B",
+    correctTeam2: "2",
+    explanation: "Humanism was a Renaissance intellectual movement emphasizing human potential and achievements."
+  },
+  {
+    question: "What was the purpose of Christopher Columbus' voyage in 1492?",
+    choicesTeam1: [
+      "A. To find a westward route to Asia",
+      "B. To colonize Africa",
+      "C. To explore Australia",
+      "D. To discover North America"
+    ],
+    choicesTeam2: [
+      "1. To find a westward route to Asia",
+      "2. To colonize Africa",
+      "3. To explore Australia",
+      "4. To discover North America"
+    ],
+    correctTeam1: "A",
+    correctTeam2: "1",
+    explanation: "Columbus intended to find a westward route to Asia but instead arrived in the Americas."
+  },
+  {
+    question: "Which explorer circumnavigated the globe?",
+    choicesTeam1: [
+      "A. Vasco da Gama",
+      "B. Ferdinand Magellan",
+      "C. Christopher Columbus",
+      "D. Hernán Cortés"
+    ],
+    choicesTeam2: [
+      "1. Vasco da Gama",
+      "2. Ferdinand Magellan",
+      "3. Christopher Columbus",
+      "4. Hernán Cortés"
+    ],
+    correctTeam1: "B",
+    correctTeam2: "2",
+    explanation: "Ferdinand Magellan's expedition was the first to circumnavigate the globe."
+  },
+  {
+    question: "What was the Treaty of Tordesillas?",
+    choicesTeam1: [
+      "A. An agreement dividing the Americas between Spain and Portugal",
+      "B. A trade treaty with Asia",
+      "C. A religious agreement",
+      "D. A peace treaty with England"
+    ],
+    choicesTeam2: [
+      "1. An agreement dividing the Americas between Spain and Portugal",
+      "2. A trade treaty with Asia",
+      "3. A religious agreement",
+      "4. A peace treaty with England"
+    ],
+    correctTeam1: "A",
+    correctTeam2: "1",
+    explanation: "The Treaty of Tordesillas divided new territories between Spain and Portugal."
+  },
+  {
+    question: "What was the Columbian Exchange?",
+    choicesTeam1: [
+      "A. The trade of slaves",
+      "B. The exchange of goods, diseases, and ideas between the Old and New Worlds",
+      "C. A treaty between European powers",
+      "D. A system of colonial trade"
+    ],
+    choicesTeam2: [
+      "1. The trade of slaves",
+      "2. The exchange of goods, diseases, and ideas between the Old and New Worlds",
+      "3. A treaty between European powers",
+      "4. A system of colonial trade"
+    ],
+    correctTeam1: "B",
+    correctTeam2: "2",
+    explanation: "The Columbian Exchange was a major transfer of plants, animals, diseases, and ideas across the Atlantic."
+  },
+  // Add additional questions following this structure for a total of 25.
+];
+
+
+    let currentQuestionIndex = 0;
+    let team1Score = 0;
+    let team2Score = 0;
+    let team1Answered = false;
+    let team2Answered = false;
+
+    function loadQuestion() {
+      if (currentQuestionIndex >= questions.length) {
+        endGame();
+        return;
+      }
+
+      const question = questions[currentQuestionIndex];
+      document.querySelector('.question').innerText = question.question;
+
+      const team1Buttons = document.querySelectorAll('#team1-choices button');
+      const team2Buttons = document.querySelectorAll('#team2-choices button');
+
+      team1Buttons.forEach((btn, idx) => {
+        btn.innerText = question.choicesTeam1[idx];
+        btn.disabled = false;
+      });
+
+      team2Buttons.forEach((btn, idx) => {
+        btn.innerText = question.choicesTeam2[idx];
+        btn.disabled = false;
+      });
+
+      team1Answered = false;
+      team2Answered = false;
+    }
+
+function checkAnswer(team, answer) {
+  const question = questions[currentQuestionIndex];
+  let isCorrect = false;
+
+  if (team === "team1" && !team1Answered) {
+    team1Answered = true;
+    if (answer === question.correctTeam1) {
+      team1Score++;
+      isCorrect = true;
+      alert("Team 1 answered correctly!");
+    } else {
+      alert("Team 1 is incorrect.");
+    }
+  } else if (team === "team2" && !team2Answered) {
+    team2Answered = true;
+    if (answer === question.correctTeam2) {
+      team2Score++;
+      isCorrect = true;
+      alert("Team 2 answered correctly!");
+    } else {
+      alert("Team 2 is incorrect.");
+    }
+  }
+
+  updateScoreboard();
+
+  // Automatically load the next question if answered correctly
+  if (isCorrect) {
+    currentQuestionIndex++;
+    loadQuestion();
+  } else if (team1Answered && team2Answered) {
+    // Show explanation if both teams answered incorrectly
+    if (answer !== question.correctTeam1 && answer !== question.correctTeam2) {
+      alert("Explanation: " + question.explanation);
+    }
+    currentQuestionIndex++;
+    loadQuestion();
+  }
+}
+
+    function updateScoreboard() {
+      document.querySelector('.scoreboard').innerText = `Team 1: ${team1Score} | Team 2: ${team2Score}`;
+    }
+
+    function endGame() {
+      const winner = team1Score > team2Score ? "Team 1" : team2Score > team1Score ? "Team 2" : "No one";
+      alert(`Game Over! ${winner} wins!\nFinal Score: Team 1: ${team1Score} | Team 2: ${team2Score}`);
+    }
+
+    // Load the first question
+    loadQuestion();
+  </script>
+</body>
+</html>
